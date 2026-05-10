@@ -117,7 +117,9 @@ async function createBooking(req, res) {
 
       try {
         const pdfBuffer = await generateTicketPDF(fullBooking);
-        await transporter.sendMail({
+        
+        // Gửi email không chờ (non-blocking) để tránh lỗi Timeout trên Render
+        transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: fullBooking.User.email,
           subject: 'Xác nhận đặt tour (Thanh toán trực tiếp)',
@@ -135,9 +137,10 @@ async function createBooking(req, res) {
             content: pdfBuffer,
             contentType: 'application/pdf',
           }]
-        });
+        }).catch(err => console.error('Email sending failed (Render SMTP block likely):', err));
+        
       } catch (err) {
-        console.error('Email error:', err);
+        console.error('PDF Generation error:', err);
       }
     }
 
