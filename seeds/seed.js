@@ -15,27 +15,27 @@ async function seed() {
   try {
     console.log('🌱 Starting database seed...');
 
-    // Disable foreign key checks to allow dropping tables
-    await sequelize.query('SET FOREIGN_KEY_CHECKS=0;');
+    const isPostgres = sequelize.getDialect() === 'postgres';
     
-    // Drop all tables manually
-    await sequelize.query('DROP TABLE IF EXISTS `bookings`;');
-    await sequelize.query('DROP TABLE IF EXISTS `payments`;');
-    await sequelize.query('DROP TABLE IF EXISTS `chatbot_logs`;');
-    await sequelize.query('DROP TABLE IF EXISTS `admin_logs`;');
-    await sequelize.query('DROP TABLE IF EXISTS `staff_group_permissions`;');
-    await sequelize.query('DROP TABLE IF EXISTS `staff_groups`;');
-    await sequelize.query('DROP TABLE IF EXISTS `permissions`;');
-    await sequelize.query('DROP TABLE IF EXISTS `function_groups`;');
-    await sequelize.query('DROP TABLE IF EXISTS `tours`;');
-    await sequelize.query('DROP TABLE IF EXISTS `users`;');
-    await sequelize.query('DROP TABLE IF EXISTS `roles`;');
+    if (isPostgres) {
+      await sequelize.sync({ force: true });
+    } else {
+      await sequelize.query('SET FOREIGN_KEY_CHECKS=0;');
+      await sequelize.query('DROP TABLE IF EXISTS `bookings`;');
+      await sequelize.query('DROP TABLE IF EXISTS `payments`;');
+      await sequelize.query('DROP TABLE IF EXISTS `chatbot_logs`;');
+      await sequelize.query('DROP TABLE IF EXISTS `admin_logs`;');
+      await sequelize.query('DROP TABLE IF EXISTS `staff_group_permissions`;');
+      await sequelize.query('DROP TABLE IF EXISTS `staff_groups`;');
+      await sequelize.query('DROP TABLE IF EXISTS `permissions`;');
+      await sequelize.query('DROP TABLE IF EXISTS `function_groups`;');
+      await sequelize.query('DROP TABLE IF EXISTS `tours`;');
+      await sequelize.query('DROP TABLE IF EXISTS `users`;');
+      await sequelize.query('DROP TABLE IF EXISTS `roles`;');
+      await sequelize.query('SET FOREIGN_KEY_CHECKS=1;');
+      await sequelize.sync({ force: false });
+    }
     
-    // Re-enable foreign key checks
-    await sequelize.query('SET FOREIGN_KEY_CHECKS=1;');
-    
-    // Sync database
-    await sequelize.sync({ force: false });
     console.log('✓ Database synchronized');
 
     // 1. Create Roles
